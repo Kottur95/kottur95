@@ -27,51 +27,50 @@ default-lease-time 600;
 max-lease-time 7200; "
 )
 sub defaultconf{
-open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
-print OUTFILE "$defaultconfig";
-close (OUTFILE);
-system("$commandDHCP");
+	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
+	print OUTFILE "$defaultconfig";
+	close (OUTFILE);
+	system("$commandDHCP");
 }
 sub manualconf{
-print ("Enter DNS server one\n");
-chomp ($dns1=<STDIN>)
-print ("Enter DNS server two\n");
-chomp ($dns2=<STDIN>)
-print ("Enter the subnet, in a format where the first 3 entries end with a period\n");
-while (@subnet1 < 4) { ## method of filling an array inspired by https://stackoverflow.com/questions/18979021/take-array-input-from-user-in-perl
-	$arrayinput = <STDIN>;
-    chomp $arrayinput;
-    push @subnet1, $arrayinput;
-}
-print ("Enter the netmask\n");
-chomp ($netmask=<STDIN>)
-print ("Enter the bottom range of ip addresses\n");
-chomp ($range1=<STDIN>)
-print ("Enter the top range of ip addresses\n");
-chomp ($range2=<STDIN>)
-print ("Enter the broadcast address\n");
-chomp ($broadcast=<STDIN>)
-open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
-
-print OUTFILE "$manualconfig";
-close (OUTFILE);
-system("$commandDHCP");
+	print ("Enter DNS server one\n");
+	chomp ($dns1=<STDIN>)
+	print ("Enter DNS server two\n");
+	chomp ($dns2=<STDIN>)
+	print ("Enter the subnet, in a format where the first 3 entries end with a period\n");
+	while (@subnet1 < 4) { ## method of filling an array inspired by https://stackoverflow.com/questions/18979021/take-array-input-from-user-in-perl
+		$arrayinput = <STDIN>;
+		chomp $arrayinput;
+		push @subnet1, $arrayinput;
+		}
+	print ("Enter the netmask\n");
+	chomp ($netmask=<STDIN>)
+	print ("Enter the bottom range of ip addresses\n");
+	chomp ($range1=<STDIN>)
+	print ("Enter the top range of ip addresses\n");
+	chomp ($range2=<STDIN>)
+	print ("Enter the broadcast address\n");
+	chomp ($broadcast=<STDIN>)
+	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
+	print OUTFILE "$manualconfig";
+	close (OUTFILE);
+	system("$commandDHCP");
 }
 sub fileconf{
-print ("Enter the absolute path of the file you wish to use\n");
-chomp ($filepath=<STDIN>)
-open (INFILE, ">$filepath" || die "couldn't access file $! on line $.";
-while (<INFILE>) 
+	print ("Enter the absolute path of the file you wish to use\n");
+	chomp ($filepath=<STDIN>)
+	open (INFILE, ">$filepath" || die "couldn't access file $! on line $.";
+	while (<INFILE>) 
 	{
 		print "the file contains the following lines:";
 		print "$_\n";
 	}
-$fileconfig = <INFILE>;
-close (INFILE);
-open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
-print OUTFILE "$fileconfig";
-close (OUTFILE);
-system("$commandDHCP");
+	$fileconfig = <INFILE>;
+	close (INFILE);
+	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
+	print OUTFILE "$fileconfig";
+	close (OUTFILE);
+	system("$commandDHCP");
 }
 print ("This program must be run in administrator mode\n");
 print ("This program will erase the existing config file. Y to continue, N to exit\n");
