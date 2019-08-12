@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+
+#chdir "/root/etc/dhcp";
+
+use strict;
+use warnings;
+my($permission,$choice,
+	$defaultPath = "/etc/dhcp/dhcpd.conf"
+	$commandDHCP = "dhcp service start"
+	$defaultconfig = "option domain-name-servers 8.8.8.8, 8.8.4.4
+subnet 192.168.1.0 netmask 255.255.255.0 {
+range 192.168.1.101 192.168.1.254;
+option subnet-mask 255.255.255.0;                  	
+option broadcast-address 192.168.1.255;
+}
+default-lease-time 600;
+max-lease-time 7200; "
+)
+sub defaultconf{
+open (OUTFILE, ">$defaultPath");
+print OUTFILE "$defaultconfig";
+close (OUTFILE);
+system("$commandDHCP");
+}
+print ("This program must be run in administrator mode\n");
+print ("This program will erase the existing config file. Y to continue, N to exit\n");
+print ("Enter Y or N: ");
+
+chomp ($permission=<STDIN>);
+#$permission=~tr/a-z/A-Z/;
+
+if ($permission eq "Y")
+{
+	print ("Running ifconfig...\n");
+	#sleep 
+	system("ifconfig");
+	
+	print ("Enter M for manual configuration, A for automatic: \n");
+	chomp ($choice=<STDIN>)
+	
+	SWITCH:
+	{
+		($choice eq "A")
+		{
+			&defaultconf
+		}
+	
+	
+	
+}
+
+
