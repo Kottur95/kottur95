@@ -4,73 +4,81 @@
 
 use strict;
 use warnings;
-my($permission,$choice, $manualconfig, $fileconfig, $filepath,
-$dns1, $dns2, $range1, $range2, $netmask, $broadcast, $arrayinput
-@subnet1 
-	$defaultPath = "/etc/dhcp/dhcpd.conf"
-	$commandDHCP = "dhcp service start"
-	$manualconfig = "option domain-name-servers $dns1, $dns2
-subnet @subnet1[0]@subnet1[1]@subnet1[2]@subnet1[3] netmask $netmask{
-range $range1 $range2;
-option subnet-mask $netmask;
-option broadcast-address $broadcast;
-}
-default-lease-time 600;
-max-lease-time 7200;"
-	$defaultconfig = "option domain-name-servers 8.8.8.8, 8.8.4.4
+my($permission,$choice, $fileconfig, $filepath,
+$dns1, $dns2, $range1, $range2, $netmask, $broadcast, $arrayinput,
+@subnet1, $defaultPath, $commandDHCP, $manualconfig, $defaultconfig);
+$defaultPath = "/etc/dhcp/dhcpd.conf";
+$commandDHCP = "dhcpd service start";
+$defaultconfig = "option domain-name-servers 8.8.8.8, 8.8.4.4;
 subnet 192.168.1.0 netmask 255.255.255.0 {
 range 192.168.1.101 192.168.1.254;
 option subnet-mask 255.255.255.0;                  	
 option broadcast-address 192.168.1.255;
 }
 default-lease-time 600;
-max-lease-time 7200; "
-)
-sub defaultconf{
+max-lease-time 7200; ";
+
+sub defaultconf
+{
 	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
 	print OUTFILE "$defaultconfig";
 	close (OUTFILE);
 	system("$commandDHCP");
 }
-sub manualconf{
+
+sub manualconf
+{
+	$manualconfig = "option domain-name-servers $dns1, $dns2
+	subnet @subnet1[0]@subnet1[1]@subnet1[2]@subnet1[3] netmask $netmask{
+	range $range1 $range2;
+	option subnet-mask $netmask;
+	option broadcast-address $broadcast;
+	}
+	default-lease-time 600;
+	max-lease-time 7200;"
 	print ("Enter DNS server one\n");
-	chomp ($dns1=<STDIN>)
+	chomp ($dns1=<STDIN>);
 	print ("Enter DNS server two\n");
-	chomp ($dns2=<STDIN>)
+	chomp ($dns2=<STDIN>);
 	print ("Enter the subnet, in a format where the first 3 entries end with a period\n");
-	while (@subnet1 < 4) { ## method of filling an array inspired by https://stackoverflow.com/questions/18979021/take-array-input-from-user-in-perl
+		
+		while (@subnet1 < 4)  ## method of filling an array inspired by https://stackoverflow.com/questions/18979021/take-array-input-from-user-in-perl
+		{
 		$arrayinput = <STDIN>;
-		chomp $arrayinput;
-		push @subnet1, $arrayinput;
+    	chomp $arrayinput;
+    	push @subnet1, $arrayinput;
 		}
+		
 	print ("Enter the netmask\n");
-	chomp ($netmask=<STDIN>)
+	chomp ($netmask=<STDIN>);
 	print ("Enter the bottom range of ip addresses\n");
-	chomp ($range1=<STDIN>)
+	chomp ($range1=<STDIN>);
 	print ("Enter the top range of ip addresses\n");
-	chomp ($range2=<STDIN>)
+	chomp ($range2=<STDIN>);
 	print ("Enter the broadcast address\n");
-	chomp ($broadcast=<STDIN>)
+	chomp ($broadcast=<STDIN>);
 	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
 	print OUTFILE "$manualconfig";
 	close (OUTFILE);
 	system("$commandDHCP");
 }
+
 sub fileconf{
-	print ("Enter the absolute path of the file you wish to use\n");
-	chomp ($filepath=<STDIN>)
-	open (INFILE, ">$filepath" || die "couldn't access file $! on line $.";
+print ("Enter the absolute path of the file you wish to use\n");
+chomp ($filepath=<STDIN>);
+open (INFILE, ">$filepath" || die "couldn't access file $! on line $.");
+	
 	while (<INFILE>) 
 	{
 		print "the file contains the following lines:";
 		print "$_\n";
 	}
-	$fileconfig = <INFILE>;
-	close (INFILE);
-	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
-	print OUTFILE "$fileconfig";
-	close (OUTFILE);
-	system("$commandDHCP");
+$fileconfig = <INFILE>;
+close (INFILE);
+open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
+print OUTFILE "$fileconfig";
+close (OUTFILE);
+system("$commandDHCP");
 }
 print ("This program must be run in administrator mode\n");
 print ("This program will erase the existing config file. Y to continue, N to exit\n");
@@ -86,23 +94,27 @@ if ($permission eq "Y")
 	system("ifconfig");
 	
 	print ("Enter M for manual configuration, A for automatic, F for file: \n");
-	chomp ($choice=<STDIN>)
+	chomp ($choice=<STDIN>);
 	
 	SWITCH:
 	{
-		($choice eq "A")
+		($choice eq "A") and do
 		{
-			&defaultconf
-		}
+			&defaultconf;
+			last;
+		};
 	
 	
-		($choice eq "M")
+		($choice eq "M") and do
 		{
-			&manualconf
-		}
-		($choice eq "F")
+			&manualconf;
+			last;
+		};
+		($choice eq "F") and do
 		{
-			&fileconf
-		}
+			&fileconf;
+			last;
+		};
 		
+}
 }
