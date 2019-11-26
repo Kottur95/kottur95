@@ -1,120 +1,155 @@
 #!/usr/bin/perl
-
+#Julian Moore
+#Jasper Lagan
+#Last Updated : August 12, 2019
+#project.pl
+ 
+#This program's purpose is to configure/re-configure the dhcpd.conf file, with options; A for automatic/default configuration, M for manual input, F to use a pre-made file.
+ 
 #chdir "/root/etc/dhcp";
+ 
 use strict;
 use warnings;
-my($permission,$choice, $filepath,
-$dns1, $dns2, $range1, $range2, $broadcast, $arrayinput,
-@subnet1, $defaultPath, $commandDHCP, $manualconfig, $defaultconfig);
-$defaultPath = "/etc/dhcp/dhcpd.conf";
-$commandDHCP = "dhcpd service start";
+ 
+system("clear");    #clear terminal for each run
+ 
+my($permission,$choice, $fileconfig, $filepath,                             #these are the variables for each value in the
+$dns1, $dns2, $range1, $range2, $netmask, $broadcast, $arrayinput,  #dhcpd.conf file
+@subnet1, $defaultPath, $commandDHCP, $manualconfig, $defaultconfig);   #used array for each of the subnet value
+ 
+$defaultPath = "/etc/dhcp/dhcpd.conf";      #default path to the config file, used as shortcut to avoid re-typing path
+$commandDHCP = "dhcpd service start";       #another shortcut to avoid re-typing the command to start DHCP
+ 
 $defaultconfig = "option domain-name-servers 8.8.8.8, 8.8.4.4;
 subnet 192.168.1.0 netmask 255.255.255.0 {
 range 192.168.1.101 192.168.1.254;
-option subnet-mask 255.255.255.0;                  	
+option subnet-mask 255.255.255.0;                  
 option broadcast-address 192.168.1.255;
 }
 default-lease-time 600;
-max-lease-time 7200; ";
-
-sub defaultconf
+max-lease-time 7200; ";     #since the default configuration is fixed, we turned all the values into one string
+                                    #that can be called upon if the user chooses option A
+ 
+sub defaultconf #this subroutine will be called upon when the user chooses option A
 {
-	open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
-	print OUTFILE "$defaultconfig";
-	close (OUTFILE);
-	system("$commandDHCP");
+    open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
+    print OUTFILE "$defaultconfig";
+    close (OUTFILE);
+    system("$commandDHCP");
 }
-
-#sub manualconf
-#{
-	#my ($netmask, %netmask);
-	#print ("Enter DNS server one\n");
-	#chomp ($dns1=<STDIN>);
-	#print ("Enter DNS server two\n");
-	#chomp ($dns2=<STDIN>);
-	#print ("Enter the subnet, in a format where the first 3 entries end with a period\n");
-	#	
-	#	while (@subnet1 < 4)  ## method of filling an array inspired by https://stackoverflow.com/questions/18979021/take-array-input-from-user-in-perl
-	#	{
-#		$arrayinput = <STDIN>;
-  #  	chomp $arrayinput;
- #   	push @subnet1, $arrayinput;
-#		}
-	#	
-#	print ("Enter the netmask\n");
-	#chomp ($netmask=<STDIN>);
-	#print ("Enter the bottom range of ip addresses\n");
-	#chomp ($range1=<STDIN>);
-	#print ("Enter the top range of ip addresses\n");
-	#chomp ($range2=<STDIN>);
-	#print ("Enter the broadcast address\n");
-	#chomp ($broadcast=<STDIN>);
-	#$manualconfig = "option domain-name-servers $dns1, $dns2
-	#subnet @subnet1[0]@subnet1[1]@subnet1[2]@subnet1[3] netmask $netmask{
-	#range $range1, $range2;
-	#option subnet-mask $netmask;
-	#option broadcast-address $broadcast;
-	#}
-	#default-lease-time 600;
-	#max-lease-time 7200;"
-	#open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";
-	#print OUTFILE "$manualconfig";
-	#close (OUTFILE);
-	#system("$commandDHCP");
-#}
-
-sub fileconf{
-my ($fileconfig);
-print ("Enter the absolute path of the file you wish to use\n");
-chomp ($filepath=<STDIN>);
-open (INFILE, "+<$filepath" || die "couldn't access file $! on line $.");
-	
-	while (<INFILE>) 
-	{
-		print "the file contains the following line:";
-		print "$_\n";
-	}
-$fileconfig = <INFILE>;
-#open (INFILE, "+>$defaultPath") || die "couldn't access file $! on line $.";
-#print INFILE "$fileconfig";
-#close (INFILE);
-#system("$commandDHCP");
+ 
+sub manualconf
+{
+    #$manualconfig = "option domain-name-servers $dns1, $dns2subnet @subnet1[0]@subnet1[1]@subnet1[2]@subnet1[3] netmask $netmask{ range $range1 $range2; option subnet-mask $netmask;option broadcast-address $broadcast;}default-lease-time 600; max-lease-time 7200;"
+   
+    #We could not find a solution to encapsulate the above variables
+    #and assign them into another single variable "$manualconfig" so it is commented out for further research
+   
+    print ("Enter DNS server one\n");
+    chomp ($dns1=<STDIN>);      #enter the first dns value in format "x.x.x.x"
+    print ("Enter DNS server two\n");
+    chomp ($dns2=<STDIN>);      #enter the second dns value in format "x.x.x.x"
+    print ("Enter the subnet, in a format where the first 3 entries end with a period\n");
+            #the format of input for subnet is
+                                                #value1.
+                                                #value2.
+                                                #value3.
+                                                #value4.
+       
+        while (@subnet1 < 4) # method of filling an array inspired by
+                                    #https://stackoverflow.com/questions/18979021/take-array-input-from-user-in-perl
+        {
+        $arrayinput = <STDIN>;          #user will input the value for each subnet value
+        chomp $arrayinput;              #there are 4 values so each input increments subnet 1 by +1 until the 4th value
+        push @subnet1, $arrayinput; #and moves on to the next part of the code
+        }
+       
+    print ("Enter the netmask\n");  #format for netmask is one line "x.x.x.x"
+    chomp ($netmask=<STDIN>);
+    print ("Enter the bottom range of ip addresses\n"); #format for range is "x.x.x.x"
+    chomp ($range1=<STDIN>);
+    print ("Enter the top range of ip addresses\n");
+    chomp ($range2=<STDIN>);
+    print ("Enter the broadcast address\n");                    #format for broadcast is also "x.x.x.x"
+    chomp ($broadcast=<STDIN>);
+   
+    open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";    #basic error message
+    print OUTFILE "$manualconfig";      #this was meant to pint the values entered above into the
+    close (OUTFILE);                            #dhcp.conf file, overwriting the existing file
+   
+    system("$commandDHCP");     #system will run the DHCP start command
 }
-print ("This program must be run in administrator mode\n");
+ 
+sub fileconf        #subroutine if the user chooses option F
+{
+    print ("Enter the absolute path of the file you wish to use\n");    #prompt user to enter the location of the pre-
+    chomp ($filepath=<STDIN>);                                                      #made config file
+    open (INFILE, ">$filepath" || die "couldn't access file $! on line $.");    #open the entered path
+                                                                                                        #and basic error message
+    while (<INFILE>)
+    {
+        print "the file contains the following lines:";
+        print "$_\n";   #prints the input into the file
+    }
+ 
+    $fileconfig = <INFILE>;
+    close (INFILE);
+   
+    open (OUTFILE, ">$defaultPath") || die "couldn't access file $! on line $.";    #opens the location for conf file
+    print OUTFILE "$fileconfig";        #puts the chosen file's content into the dhcpd.conf file
+    close (OUTFILE);                        #close file
+    system("$commandDHCP");             #run the DHCP start command
+}
+ 
+#The first output of the program starts here. We started with the subroutines and all the declarations
+#in order to make it tidier
+ 
+print ("This program must be run in administrator mode\n");             #disclaimers for the user                      
 print ("This program will erase the existing config file. Y to continue, N to exit\n");
-print ("Enter Y or N: ");
- 
+print ("Enter Y or N: ");       #asks the user to proceed
 chomp ($permission=<STDIN>);
-#$permission=~tr/a-z/A-Z/;
-
-if ($permission eq "Y")
-{
-	print ("Running ifconfig...\n");
-	#sleep 
-	system("ifconfig");
-	
-	print ("Enter M for manual configuration, A for automatic, F for file: \n");
-	chomp ($choice=<STDIN>);
-	
-	SWITCH:
-	{
-		($choice eq "A") and do
-		{
-			&defaultconf;
-			last;
-		};
-	
-	
-		($choice eq "M") and do
-		{
-			&manualconf;
-			last;
-		};
-		($choice eq "F") and do
-		{
-			&fileconf;
-			last;
-		};
-		
-}
+$permission=~tr/a-z/A-Z/;       #Translitterate to accept upper/lower case
+ 
+if ($permission eq "N")         #starting with the N answer to simplify
+    {
+        print ("Exitting program...\n");
+        sleep (1);                  #sleep for break and make the output tidy
+    }
+   
+elsif($permission eq "Y")       #entering Y initiates the rest of the program
+    {
+        print ("Running configuration...\n");
+        sleep (1);                  #another break to indicate chosen option
+        #system("ifconfig");
+   
+        print ("Enter M for manual configuration, A for automatic, F for file: \n");
+        chomp ($choice=<STDIN>);
+        $choice=~tr/a-z/A-Z/;   #translitteration again to ignore case
+   
+    SWITCH:                         #switch is used for each of the user options
+    {
+        ($choice eq "A") and do                 #for chosing option A
+        {
+            &defaultconf;                           #calls the subroutine made for option A, which is the default
+            last;                                       #"automatic" configuration
+        };
+   
+        ($choice eq "M") and do                 #for choosing option M
+        {
+            &manualconf;                            #calls the subroutine made for option M, which is the manual
+            last;                                       #configuration requiring user input
+        };
+       
+        ($choice eq "F") and do                 #for choosing F
+        {
+            &fileconf;                              #calls the subroutine made for option F, which is to use
+            last;                                       #a pre-made config file
+        };
+       
+        {
+            print ("Invalid choice, select A, M, or F \n");     #message indicating invalid choice is made
+           
+        };
+    }
+ 
 }
